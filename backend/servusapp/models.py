@@ -27,10 +27,17 @@ class User(models.Model):
     #CREATE A DEFAULT PROFILE PICTURE
     profile_picture = models.ImageField(blank=True)
 
+    def __str__(self):
+        return self.first_name + " " + self.last_name
+
 class Service_Category(models.Model):
     name = models.CharField(max_length=100)
+
     class Meta:
         verbose_name_plural = 'Service_Categories'
+
+    def __str__(self):
+        return self.name
 
 class Service(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
@@ -41,6 +48,9 @@ class Service(models.Model):
     description = models.CharField(max_length=4095, blank=True)
     latitude = models.DecimalField(max_digits=12, decimal_places=9)
     longitude = models.DecimalField(max_digits=12, decimal_places=9)
+
+    def __str__(self):
+        return self.title
 
 class Service_Image(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
