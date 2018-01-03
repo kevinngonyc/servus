@@ -4,7 +4,10 @@ from django.forms.models import model_to_dict
 from django.middleware.csrf import get_token
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password
+
 from .models import *
 import json
 
@@ -42,18 +45,17 @@ def delist_dict(qstring_dict):
 def login(request):
     csrf_token = get_token(request)
     try:
-        print(request.body)
         user = json.loads(request.body)
         uid = user.get("id", None)
     except:
         return JsonResponse({"msg":"Missing User Dump"}, status=500)
     try:
-        u = User.objects.get(pk=uid)
-        request.SESSION['uid'] = uid
-        print("user found")
+        u = User.objects.get(username=uid)
     except User.DoesNotExist:
         u = register(user)
-    return JsonResponse(u)
+    return JsonResponse({
+        "username": u.username
+    })
 
 def register(user):
     print("user created")
@@ -61,12 +63,13 @@ def register(user):
     u = User(
         first_name=user["givenName"], 
         last_name=user["familyName"],
-
-        email=user["email"])
+        username=user["id"],
+        password=make_password(user["id"]),
+        email=user["email"],)
     u.save()
     return u
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
