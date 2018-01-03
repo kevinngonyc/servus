@@ -8,3 +8,9 @@ urlpatterns = [
     path('login/', views.login, name='json_login'),
 ]
 
+
+from rest_framework.authtoken import views
+
+urlpatterns += [
+    path('get_auth/', views.obtain_auth_token),
+]

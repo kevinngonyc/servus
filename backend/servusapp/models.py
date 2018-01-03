@@ -1,7 +1,6 @@
 from django.db import models
-# Create your models here.
-
-class User(models.Model):
+from django.contrib.auth.models import User as BaseUser
+class User(BaseUser):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
     first_name = models.CharField(max_length=50)
@@ -21,8 +20,8 @@ class User(models.Model):
         ('f', 'female'),
         ('o', 'other'),
     )
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    birthdate = models.DateField()
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
+    birthdate = models.DateField(blank=True, null=True)
 
     #CREATE A DEFAULT PROFILE PICTURE
     profile_picture = models.ImageField(blank=True)

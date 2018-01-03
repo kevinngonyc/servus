@@ -2,6 +2,9 @@ from django.shortcuts import get_object_or_404, render
 from django.core import serializers
 from django.forms.models import model_to_dict
 from django.middleware.csrf import get_token
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 from .models import *
 import json
 
@@ -38,9 +41,11 @@ def delist_dict(qstring_dict):
 
 def login(request):
     csrf_token = get_token(request)
-    user = request.POST.get("user", {})
-    uid = user.get("id", None)
-    if uid == None:
+    try:
+        print(request.body)
+        user = json.loads(request.body)
+        uid = user.get("id", None)
+    except:
         return JsonResponse({"msg":"Missing User Dump"}, status=500)
     try:
         u = User.objects.get(pk=uid)
@@ -52,9 +57,16 @@ def login(request):
 
 def register(user):
     print("user created")
+    print(user)
     u = User(
-        first_name=user.givenName, 
-        last_name=user.lastName, 
-        email=user.email)
+        first_name=user["givenName"], 
+        last_name=user["familyName"],
+
+        email=user["email"])
     u.save()
     return u
+
+@receiver(post_save, sender=User)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
