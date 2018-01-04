@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404, render
 from django.core import serializers
 from django.forms.models import model_to_dict
-from django.middleware.csrf import get_token
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import NotAuthenticated
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.decorators import api_view
 
 from .models import *
 import json
@@ -31,10 +32,10 @@ def users(request):
 def user(request, user_id):
     try:
         u = User.objects.get(pk=user_id)
-        user = serializers.serialize("json", [u, ])
-    except User.DoesNotExist:
+        _user = serializers.serialize("json", [u, ])
+    except ObjectDoesNotExist:
         raise Http404("User does not exist")
-    return HttpResponse(user, content_type="application/json")
+    return HttpResponse(_user, content_type="application/json")
 
 
 def delist_dict(qstring_dict):
@@ -52,7 +53,7 @@ def login(request):
         return JsonResponse({"msg":"Missing User Dump"}, status=500)
     try:
         u = User.objects.get(username=uid)
-    except User.DoesNotExist:
+    except ObjectDoesNotExist:
         u = register(user)
     return JsonResponse({
         "username": u.username
@@ -70,12 +71,13 @@ def register(user):
     u.save()
     return u
 
+@api_view(['POST','GET'])
 def me(request):
-    print(request.user)
-    if not request.user:
-        return NotAuthenticated()
+    if isinstance(request.user, AnonymousUser):
+        return HttpResponse('Unauthorized', status=401)
     return JsonResponse({
-        "username": request.user.username
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name
     })
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
