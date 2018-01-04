@@ -1,14 +1,14 @@
 from django.db import models
-# Create your models here.
-
-class User(models.Model):
-    date_created = models.DateTimeField(auto_now_add=True)
+from django.contrib.auth.models import AbstractUser
+class User(AbstractUser):
+    pass
+    # date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    description = models.CharField(max_length=4095, blank=True)
-    email = models.EmailField()
-    password = models.CharField(max_length=255)
+    # # first_name = models.CharField(max_length=50)
+    # # last_name = models.CharField(max_length=50)
+    # description = models.CharField(max_length=4095, blank=True)
+    # # email = models.EmailField()
+    # # password = models.CharField(max_length=255)
 
     USER_TYPE_CHOICES = (
         ('p', 'provider'),
@@ -21,8 +21,8 @@ class User(models.Model):
         ('f', 'female'),
         ('o', 'other'),
     )
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    birthdate = models.DateField()
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
+    birthdate = models.DateField(blank=True, null=True)
 
     #CREATE A DEFAULT PROFILE PICTURE
     profile_picture = models.ImageField(blank=True)
