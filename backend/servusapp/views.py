@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import NotAuthenticated
 from django.contrib.auth.hashers import make_password
 
 from .models import *
@@ -43,8 +44,8 @@ def delist_dict(qstring_dict):
     return delisted_dict
 
 def login(request):
-    csrf_token = get_token(request)
     try:
+        print(request.body)
         user = json.loads(request.body)
         uid = user.get("id", None)
     except:
@@ -68,6 +69,14 @@ def register(user):
         email=user["email"],)
     u.save()
     return u
+
+def me(request):
+    print(request.user)
+    if not request.user:
+        return NotAuthenticated()
+    return JsonResponse({
+        "username": request.user.username
+    })
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
